@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+<title>Pack 361 Registration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@600;700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a single centered working column; top bar switches Parent form <-> Committee (simulated backend). Stepper on the left at desktop, compact progress on phones. */
+:root{
+  --bg:#f3f6fa; --surface:#ffffff; --ink:#14213d; --muted:#56627a; --line:#d6dde8;
+  --blue:#1f4e9c; --blue-soft:#e6eefb; --gold:#f2b705; --gold-soft:#fff4cc; --gold-ink:#6b4f00;
+  --ok:#1d7a46; --ok-soft:#e3f4ea; --warn:#9a5700; --warn-soft:#fdf0dc; --err:#b42318;
+  --f-display:"Zilla Slab",Georgia,"Times New Roman",serif;
+  --f-body:"Source Sans 3",-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1420; --surface:#161f31; --ink:#e7ecf6; --muted:#9ba7be; --line:#2a3752;
+  --blue:#82aaf0; --blue-soft:#1c2b48; --gold:#f5c542; --gold-soft:#3a3113; --gold-ink:#f5d67a;
+  --ok:#5cc88a; --ok-soft:#15301f; --warn:#f0b35a; --warn-soft:#352812; --err:#ff8a80; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1420; --surface:#161f31; --ink:#e7ecf6; --muted:#9ba7be; --line:#2a3752;
+  --blue:#82aaf0; --blue-soft:#1c2b48; --gold:#f5c542; --gold-soft:#3a3113; --gold-ink:#f5d67a;
+  --ok:#5cc88a; --ok-soft:#15301f; --warn:#f0b35a; --warn-soft:#352812; --err:#ff8a80; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:16px;padding-block:0 48px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(1.7rem,4vw,2.3rem)} h2{font-size:1.55rem} h3{font-size:1.15rem}
+p{margin:0} a{color:var(--blue)}
+.mono{font-family:var(--f-mono);font-size:.88em}
+.muted{color:var(--muted)}
+.eyebrow{font-size:.75rem;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+
+/* top bar */
+.topbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding-block:18px;border-bottom:1px solid var(--line);margin-bottom:24px}
+.brand{display:flex;gap:14px;align-items:center}
+.patch{width:44px;height:44px;border-radius:50%;background:var(--blue);color:var(--gold);display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:1rem;border:3px solid var(--gold);flex:none}
+.logo{height:80px;width:auto;flex:none;background:#ffffff;border-radius:12px;padding:6px 8px;box-shadow:0 0 0 1px var(--line)}
+.brand small{display:block;color:var(--muted);font-size:.85rem}
+.brand strong{font-family:var(--f-display);font-size:1.2rem}
+.mode{display:flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--surface)}
+.mode button{border:0;background:transparent;color:var(--muted);font:600 .9rem var(--f-body);padding:7px 14px;border-radius:999px;cursor:pointer}
+.mode button[aria-pressed="true"]{background:var(--blue);color:var(--surface)}
+.preview-note{background:var(--gold-soft);color:var(--gold-ink);border-radius:var(--r);padding:10px 14px;font-size:.9rem;margin-bottom:20px}
+
+/* parent flow */
+.flow{display:grid;grid-template-columns:220px minmax(0,1fr);gap:28px;align-items:start}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:2px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+.steps li{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:8px;color:var(--muted);font-size:.95rem}
+.steps .n{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:.78rem;font-weight:700;flex:none;font-variant-numeric:tabular-nums}
+.steps li.done .n{background:var(--blue);border-color:var(--blue);color:var(--surface)}
+.steps li.cur{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 0 0 1px var(--line)}
+.steps li.cur .n{border-color:var(--gold);background:var(--gold);color:#3a2a00}
+.steps .opt{font-size:.72rem;font-weight:400;color:var(--muted)}
+.mobile-progress{display:none}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:clamp(18px,3vw,32px);display:grid;gap:22px;min-width:0}
+.lede{font-size:1.08rem;max-width:62ch}
+.stack{display:grid;gap:14px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+label.f{display:grid;gap:5px;font-weight:600;font-size:.92rem}
+label.f .req{color:var(--err)}
+input[type=text],input[type=email],input[type=tel],input[type=number],select,textarea{font:inherit;font-size:1rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%;min-width:0}
+textarea{font-family:var(--f-mono);font-size:.82rem;line-height:1.45;resize:vertical}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.invalid{border-color:var(--err)!important}
+.errmsg{color:var(--err);font-size:.88rem;font-weight:600}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:.95rem;cursor:pointer}
+.check input{margin-top:4px;width:17px;height:17px;accent-color:var(--blue);flex:none}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg label{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:600;font-size:.93rem;background:var(--bg)}
+.seg input{accent-color:var(--blue)}
+.seg label:has(input:checked){border-color:var(--blue);background:var(--blue-soft)}
+
+.btnrow{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:18px}
+.btn{font:700 .95rem var(--f-body);border-radius:8px;padding:10px 18px;cursor:pointer;border:1px solid var(--blue);background:var(--blue);color:var(--surface);text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn.ghost{background:transparent;color:var(--blue)}
+.btn.small{padding:6px 12px;font-size:.85rem}
+.btn.danger{border-color:var(--err);color:var(--err);background:transparent}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.linkbtn{background:none;border:0;color:var(--blue);font:600 .9rem var(--f-body);cursor:pointer;padding:0;text-decoration:underline}
+
+/* fee table */
+.fees{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.fees th,.fees td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.fees th{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.fees td.amt{text-align:right;white-space:nowrap;font-weight:700}
+.fees tr.total td{border-bottom:0;font-size:1.15rem;font-weight:700}
+.fees .desc{display:block;color:var(--muted);font-size:.88rem;font-weight:400}
+.callout{border-radius:var(--r);padding:14px 16px;display:grid;gap:6px;background:var(--blue-soft)}
+.callout.gold{background:var(--gold-soft);color:var(--gold-ink)}
+.callout.ok{background:var(--ok-soft)}
+.callout h3{font-size:1.02rem}
+
+.scoutcard{border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:14px;background:var(--bg)}
+.scoutcard header{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.scoutcard .tag{font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.shirtrow{display:grid;grid-template-columns:1fr 1fr 1fr 90px auto;gap:10px;align-items:end;border-bottom:1px dashed var(--line);padding-bottom:12px}
+.fitset legend{font-weight:700;font-size:.95rem;margin-bottom:8px}
+fieldset{border:0;padding:0;margin:0;min-width:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips label{display:flex;gap:7px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:.9rem;cursor:pointer;background:var(--bg)}
+.chips label:has(input:checked){background:var(--blue-soft);border-color:var(--blue)}
+.chips input{accent-color:var(--blue)}
+.big-total{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:14px 16px;border-radius:var(--r);background:var(--gold-soft);color:var(--gold-ink)}
+.big-total strong{font-family:var(--f-display);font-size:2rem;font-variant-numeric:tabular-nums}
+.copyline{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.copyline code{font-family:var(--f-mono);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:4px 8px;user-select:all}
+.natl{display:grid;gap:10px}
+.natl .row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.pill{display:inline-block;font-size:.75rem;font-weight:700;border-radius:999px;padding:2px 9px;letter-spacing:.03em}
+.pill.new{background:var(--gold-soft);color:var(--gold-ink)}
+.pill.ret{background:var(--blue-soft);color:var(--blue)}
+.pill.no{background:var(--warn-soft);color:var(--warn)}
+.pill.yes{background:var(--ok-soft);color:var(--ok)}
+.pill.ex{background:var(--line);color:var(--muted)}
+
+/* committee */
+.filegroups{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-bottom:20px}
+.fg{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--surface);display:grid;gap:8px;min-width:0}
+.fg .tabs{margin:0}
+.fg .share{text-transform:none;letter-spacing:0;font-weight:600;color:var(--blue)}
+.fg.private .share{color:var(--warn)}
+
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.tabs button{border:1px solid var(--line);background:var(--surface);color:var(--ink);font:600 .88rem var(--f-body);padding:7px 12px;border-radius:8px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.tabs .count{font-variant-numeric:tabular-nums;opacity:.7;margin-left:4px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table.data{border-collapse:collapse;width:100%;font-size:.86rem;font-variant-numeric:tabular-nums}
+table.data th,table.data td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+table.data th{background:var(--bg);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);position:sticky;top:0}
+table.data td.num{text-align:right}
+table.data tr:last-child td{border-bottom:0}
+.sechead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:10px;margin-bottom:10px}
+.sechead p{max-width:70ch}
+.tally{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-bottom:14px}
+.tally div{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface)}
+.tally b{display:block;font-size:1.3rem;font-family:var(--f-display);font-variant-numeric:tabular-nums}
+.tally span{font-size:.8rem;color:var(--muted)}
+.cfg{display:grid;gap:18px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:8px;font-weight:600;font-size:.9rem;z-index:10}
+
+@media (max-width:760px){
+  .flow{grid-template-columns:minmax(0,1fr)}
+  .steps{display:none}
+  .mobile-progress{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.9rem;color:var(--muted)}
+  .mobile-progress .bar{flex:1;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+  .mobile-progress .bar i{display:block;height:100%;background:var(--gold)}
+  .grid2,.grid3{grid-template-columns:minmax(0,1fr)}
+  .shirtrow{grid-template-columns:1fr 1fr}
+}
+@media (prefers-reduced-motion:no-preference){.panel{animation:rise .25s ease-out}@keyframes rise{from{transform:translateY(6px)}to{transform:none}}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand"><img class="logo" src="logo.png" alt="Pack 361 Cub Scouts logo" width="116" height="80"><div><strong>Family Registration</strong><small id="yearline">San Marino · Scouting year</small></div></div>
+    <div class="mode" role="group" aria-label="View">
+      <button id="modeParent" aria-pressed="true">Parent form</button>
+      <button id="modeAdmin" aria-pressed="false">Drive files</button>
+    </div>
+  </div>
+  <div class="preview-note"><b>Preview.</b> Nothing is sent anywhere. Submissions are saved only in this browser so you can test the flow and see the Google Drive files the app would fill in. Rows tagged <span class="pill ex">example</span> are made-up sample families.</div>
+  <main id="app"></main>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ---------- default config (what the treasurer edits) ---------- */
+const DEFAULT_CHARGES = `id,label,amount,unit,required,includes_shirts,category,description
+pack_fee,Pack 361 Activity Fee,190,per scout,yes,1,Pack Dues,"Pack program costs, meeting space, badges and awards, Pinewood Derby kit, Blue & Gold Banquet, and 1 pack T-shirt"
+extra_shirt,Additional T-shirt,15,per shirt,no,0,Class B Uniform,Extra pack T-shirts for siblings or parents`;
+
+const DEFAULT_SETTINGS = `key,value
+scouting_year,2027-2028
+pack_name,Pack 361
+zelle_recipient,treasurer@sanmarinopack361.org
+check_payable_to,Cub Scout Pack 361
+check_address,"Attn: Pack 361 Treasurer|K.L. Carver Elementary School|3100 Huntington Dr, San Marino, CA 91108"
+check_instructions,"Questions about paying by check? Email treasurer@sanmarinopack361.org"
+national_new_url,https://my.scouting.org/online-registration/a8b6cfa2-136c-47db-b7fc-2b733640852e/applicant-type
+national_returning_url,https://my.scouting.org/
+medical_form_url,https://drive.google.com/uc?export=download&id=1vSPqn9QRaI5pdT7gcY9V-OJMvlNnbH22
+contact_email,info@sanmarinopack361.org
+shirt_fits,Youth|Adult
+shirt_sizes,XS|S|M|L|XL|XXL|Other`;
+
+const DEFAULT_DENS = `den,name,grade,gender
+2,Wolf,2nd grade,boys
+3,Tiger,1st grade,boys
+4,Lion,K,boys
+5,AOL,5th grade,boys
+6,Webelos,4th grade,boys
+1,Bear,3rd grade,boys
+8,Wolf,2nd grade,girls
+9,Tiger,1st grade,girls
+10,Lion,K,girls
+11,AOL,5th grade,girls
+12,Webelos,4th grade,girls
+7,Bear,3rd grade,girls`;
+
+const TALENT = {
+  "Willing to help with": ["Help with meeting or special event","Teach a Cub Scout skill","Lead special event or activity","Be volunteer leader","Come early to help set up","Stay after to help clean up","Help pick up craft supplies or refreshments","Live/work by Scout Shop for advancements/paperwork"],
+  "Subjects or skills": ["Arts and crafts","Fishing","Cycling","Hiking","Camping","Conservation","U.S. history","Science","Technology","Engineering","Math","Woodworking","Sports","Health and nutrition"],
+  "Events or activities": ["Banquets or potlucks","Award ceremonies","Camping","Hiking","Aquatics","Cycling","Fishing","Boating","Service projects","Pinewood Derby","Raingutter Regatta","Fundraising for Scouting","Product sales"],
+  "Leadership interests": ["Work with my child's age group with another adult","Support other adults working directly with Scouts","Administrative tasks (records/communications)"],
+  "Resources I can offer": ["Truck or large SUV","Classic car for parades/events","Home space for adult meetings","Outdoor space for adult meetings","Home space for den meetings (12 or fewer)","Access to a den meeting location","Home space for large outdoor pack events","Access to a large outdoor event location","Access to a large indoor event location","Extra camping gear","Woodworking workshop","A/V equipment","Large kitchen"]
+};
+
+/* ---------- storage (preview only) ---------- */
+const LS = "pack361-reg-preview-v4";
+function load(){ try{ const s = JSON.parse(localStorage.getItem(LS)); if(s) return s; }catch(e){} return null; }
+function save(){ try{ localStorage.setItem(LS, JSON.stringify(store)); }catch(e){} }
+let store = load() || { chargesCsv:DEFAULT_CHARGES, settingsCsv:DEFAULT_SETTINGS, densCsv:DEFAULT_DENS, submissions:null };
+
+/* ---------- CSV ---------- */
+function parseCSV(text){
+  const rows=[]; let row=[], f="", q=false;
+  for(let i=0;i<text.length;i++){ const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){f+='"';i++;} else q=false; } else f+=c; }
+    else if(c==='"') q=true; else if(c===','){row.push(f);f="";}
+    else if(c==='\n'||c==='\r'){ if(c==='\r'&&text[i+1]==='\n') i++; row.push(f); rows.push(row); row=[]; f=""; }
+    else f+=c; }
+  if(f!==""||row.length){row.push(f);rows.push(row);}
+  const clean = rows.filter(r=>r.some(v=>v.trim()!==""));
+  const head = (clean.shift()||[]).map(h=>h.trim());
+  return clean.map(r=>Object.fromEntries(head.map((h,i)=>[h,(r[i]??"").trim()])));
+}
+function toCSV(rows, cols){
+  const esc=v=>{ v=v==null?"":String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
+  return [cols.map(esc).join(",")].concat(rows.map(r=>cols.map(c=>esc(r[c])).join(","))).join("\n");
+}
+
+/* ---------- config ---------- */
+let CFG;
+function buildConfig(){
+  const charges = parseCSV(store.chargesCsv).map(c=>({...c, amount:Number(c.amount)||0, includes_shirts:Number(c.includes_shirts)||0, required:/^y/i.test(c.required)}));
+  const s = Object.fromEntries(parseCSV(store.settingsCsv).map(r=>[r.key,r.value]));
+  const dens = parseCSV(store.densCsv);
+  CFG = { charges, s, dens,
+    perScout: charges.filter(c=>c.unit==="per scout" && c.required),
+    perFamily: charges.filter(c=>c.unit==="per family" && c.required),
+    shirt: charges.find(c=>c.unit==="per shirt"),
+    fits:(s.shirt_fits||"Youth|Adult").split("|"), sizes:(s.shirt_sizes||"S|M|L").split("|"),
+    shirtsIncluded: charges.filter(c=>c.unit==="per scout"&&c.required).reduce((a,c)=>a+c.includes_shirts,0) };
+  document.getElementById("yearline").textContent = "San Marino · Scouting year " + (s.scouting_year||"");
+}
+const money = n => "$" + (Math.round(n*100)/100).toLocaleString("en-US",{minimumFractionDigits:0,maximumFractionDigits:2});
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const denLabel = d => { const x=CFG.dens.find(r=>r.den===String(d)); return x?`Den ${x.den} · ${x.name} (${x.grade} ${x.gender})`:(d?`Den ${d}`:""); };
+
+/* ---------- example data ---------- */
+function exampleSubs(){
+  return [
+    { id:"F-001", example:true, submitted:"2027-08-14", p1:{name:"Dana Rivera",email:"dana.rivera@example.com",cell:"626-555-0142"}, p2:{name:"Luis Rivera",email:"",cell:"626-555-0177"}, mailing:true,
+      scouts:[{first:"Mateo",last:"Rivera",den:"2",status:"Returning",fit:"Youth",size:"S",other:""},{first:"Sofia",last:"Rivera",den:"10",status:"New",fit:"Youth",size:"XS",other:""}],
+      extras:[{fit:"Adult",size:"M",other:"",qty:1}], method:"Zelle", zelleName:"Dana Rivera", ref:"JPM99EXAMPLE1", talent:{"Willing to help with":["Come early to help set up"],"Subjects or skills":["Camping"],occupation:"Nurse",other:""} },
+    { id:"F-002", example:true, submitted:"2027-08-16", p1:{name:"Kevin Park",email:"kpark@example.com",cell:"626-555-0190"}, p2:{name:"",email:"",cell:""}, mailing:false,
+      scouts:[{first:"Ethan",last:"Park",den:"1",status:"Returning",fit:"Youth",size:"M",other:""}],
+      extras:[], method:"Check", zelleName:"", ref:"1047", talent:null }
+  ];
+}
+if(!store.submissions){ store.submissions = exampleSubs(); save(); }
+
+/* ---------- totals ---------- */
+function computeLines(sub){
+  const lines=[];
+  sub.scouts.forEach(sc=>CFG.perScout.forEach(c=>lines.push({scout:`${sc.first} ${sc.last}`.trim(), label:c.label, category:c.category, amount:c.amount, qty:1})));
+  const first = sub.scouts[0]; const firstName = first?`${first.first} ${first.last}`.trim():"";
+  CFG.perFamily.forEach(c=>lines.push({scout:firstName,label:c.label,category:c.category,amount:c.amount,qty:1}));
+  const qty = sub.extras.reduce((a,e)=>a+(Number(e.qty)||0),0);
+  if(qty && CFG.shirt) lines.push({scout:firstName,label:CFG.shirt.label,category:CFG.shirt.category,amount:CFG.shirt.amount*qty,qty});
+  return lines;
+}
+const totalOf = sub => computeLines(sub).reduce((a,l)=>a+l.amount,0);
+const sizeText = o => o.size==="Other" ? `Other: ${o.other||"?"}` : o.size;
+
+/* ---------- parent flow ---------- */
+const STEPS = ["Welcome","Family","Scouts","T-shirts","Talent survey","Review & pay","National registration"];
+let step = 0, errors = {};
+const blankScout = () => ({first:"",last:"",den:"",status:"",fit:"Youth",size:"",other:""});
+let draft = freshDraft();
+function freshDraft(){ return { p1:{name:"",email:"",cell:""}, p2:{name:"",email:"",cell:""}, mailing:true, scouts:[blankScout()], extras:[], talent:{occupation:"",hobbies:"",other:""}, skipTalent:false, method:"", zelleName:"", ref:"" }; }
+
+function renderParent(){
+  const pct = Math.round(step/(STEPS.length-1)*100);
+  document.getElementById("app").innerHTML = `
+  <div class="flow">
+    <ol class="steps">${STEPS.map((s,i)=>`<li class="${i<step?"done":i===step?"cur":""}"><span class="n">${i<step?"✓":i+1}</span><span>${s}${i===4?' <span class="opt">optional</span>':""}</span></li>`).join("")}</ol>
+    <section class="panel" aria-live="polite">
+      <div class="mobile-progress"><span>Step ${step+1} of ${STEPS.length}</span><span class="bar"><i style="width:${pct}%"></i></span><span>${STEPS[step]}</span></div>
+      ${[stepWelcome,stepFamily,stepScouts,stepShirts,stepTalent,stepPay,stepDone][step]()}
+    </section>
+  </div>`;
+  bindParent();
+}
+function nav(backLabel, nextLabel, nextId="next"){
+  return `<div class="btnrow">${step>0&&step<6?`<button class="btn ghost" id="back">← ${backLabel||"Back"}</button>`:"<span></span>"}${nextLabel?`<button class="btn" id="${nextId}">${nextLabel} →</button>`:""}</div>`;
+}
+function stepWelcome(){
+  const rows = CFG.perScout.map(c=>`<tr><td>${esc(c.label)}<span class="desc">${esc(c.description)}</span></td><td>${esc(c.unit)}</td><td class="amt">${money(c.amount)}</td></tr>`).join("")
+    + CFG.perFamily.map(c=>`<tr><td>${esc(c.label)}<span class="desc">${esc(c.description)}</span></td><td>per family</td><td class="amt">${money(c.amount)}</td></tr>`).join("")
+    + CFG.charges.filter(c=>!c.required).map(c=>`<tr><td>${esc(c.label)} <span class="muted">(optional)</span><span class="desc">${esc(c.description)}</span></td><td>${esc(c.unit)}</td><td class="amt">${money(c.amount)}</td></tr>`).join("");
+  return `
+  <div class="stack"><p class="eyebrow">Scouting year ${esc(CFG.s.scouting_year)}</p><h1>Welcome to ${esc(CFG.s.pack_name||"Pack 361")}!</h1>
+  <p class="lede">We're glad you're joining us, whether this is your first year or you're coming back. This form takes about 5 minutes. You can register all of your scouts at once and pay with one Zelle or one check.</p></div>
+  <div class="stack"><h2>What it costs</h2>
+    <div class="tablewrap" style="border:0"><table class="fees"><thead><tr><th>Charge</th><th>Unit</th><th style="text-align:right">Amount</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="callout"><h3>Scouting America national dues are separate</h3><p>National dues are set by Scouting America and paid on their website, not to the pack. We'll send you there at the end of this form.</p></div>
+  </div>
+  <div class="stack"><h2>What you'll do</h2>
+    <div class="grid3">
+      <div class="callout"><h3>1. Register here</h3><p>Family contacts, each scout's den, and T-shirt sizes.</p></div>
+      <div class="callout"><h3>2. Pay the pack</h3><p>Zelle or check to the treasurer, then enter your confirmation or check number.</p></div>
+      <div class="callout"><h3>3. Register nationally</h3><p>Finish on the Scouting America website.</p></div>
+    </div>
+  </div>
+  <div class="callout gold"><h3>Medical form (paper only)</h3><p>Download the Pack medical form, fill out Parts A and B for each scout, and bring it to your first pack or den event. Don't enter any medical information online.</p>
+    <p><a class="btn small" href="${esc(CFG.s.medical_form_url)}" target="_blank" rel="noopener">Download medical form (PDF)</a></p></div>
+  ${nav(null,"Start registration")}`;
+}
+function field(id,label,val,{type="text",req=false,ph=""}={}){
+  return `<label class="f" for="${id}">${label}${req?' <span class="req">*</span>':""}<input type="${type}" id="${id}" value="${esc(val)}" placeholder="${esc(ph)}" class="${errors[id]?"invalid":""}"></label>`;
+}
+function stepFamily(){
+  return `<div class="stack"><h2>Parent / guardian contacts</h2><p class="muted">We use these for the pack roster, den communication, and payment questions.</p></div>
+  <fieldset class="stack"><legend class="eyebrow">Parent / guardian 1</legend>
+    <div class="grid3">${field("p1name","Full name",draft.p1.name,{req:true})}${field("p1email","Email",draft.p1.email,{type:"email",req:true})}${field("p1cell","Cell phone",draft.p1.cell,{type:"tel",req:true,ph:"626-555-0123"})}</div></fieldset>
+  <fieldset class="stack"><legend class="eyebrow">Parent / guardian 2 (optional)</legend>
+    <div class="grid3">${field("p2name","Full name",draft.p2.name)}${field("p2email","Email",draft.p2.email,{type:"email"})}${field("p2cell","Cell phone",draft.p2.cell,{type:"tel"})}</div></fieldset>
+  <label class="check"><input type="checkbox" id="mailing" ${draft.mailing?"checked":""}><span><b>Add us to the pack mailing list.</b> Newsletters, event announcements and reminders.</span></label>
+  ${errors._msg?`<p class="errmsg">${errors._msg}</p>`:""}
+  ${nav(null,"Next: scouts")}`;
+}
+function stepScouts(){
+  const denOpts = d => `<option value="">Choose a den…</option>`+CFG.dens.map(r=>`<option value="${esc(r.den)}" ${String(d)===r.den?"selected":""}>Den ${esc(r.den)} · ${esc(r.name)} (${esc(r.grade)} ${esc(r.gender)})</option>`).join("");
+  const sizeOpts = s => `<option value="">Size…</option>`+CFG.sizes.map(z=>`<option ${s===z?"selected":""}>${esc(z)}</option>`).join("");
+  return `<div class="stack"><h2>Your scouts</h2><p class="muted">Add each child you're registering this year. Each registration includes ${CFG.shirtsIncluded===1?"one pack T-shirt":CFG.shirtsIncluded+" pack T-shirts"}; pick the size here.</p></div>
+  ${draft.scouts.map((sc,i)=>`<div class="scoutcard"><header><span class="tag">Scout ${i+1}</span>${draft.scouts.length>1?`<button class="linkbtn" data-rm-scout="${i}">Remove</button>`:""}</header>
+    <div class="grid2">${field(`s${i}first`,"First name",sc.first,{req:true})}${field(`s${i}last`,"Last name",sc.last,{req:true})}</div>
+    <label class="f" for="s${i}den">Den for ${esc(CFG.s.scouting_year)} <span class="req">*</span><select id="s${i}den" class="${errors[`s${i}den`]?"invalid":""}">${denOpts(sc.den)}</select></label>
+    <div class="stack" style="gap:6px"><span class="f" style="font-weight:600;font-size:.92rem">New or returning to Pack 361? <span class="req">*</span></span>
+      <div class="seg ${errors[`s${i}status`]?"invalid":""}">${["New","Returning"].map(v=>`<label><input type="radio" name="s${i}status" value="${v}" ${sc.status===v?"checked":""}>${v}</label>`).join("")}</div></div>
+    ${CFG.shirtsIncluded?`<div class="grid3">
+      <label class="f" for="s${i}fit">Included T-shirt fit<select id="s${i}fit">${CFG.fits.map(f=>`<option ${sc.fit===f?"selected":""}>${esc(f)}</option>`).join("")}</select></label>
+      <label class="f" for="s${i}size">Size <span class="req">*</span><select id="s${i}size" class="${errors[`s${i}size`]?"invalid":""}">${sizeOpts(sc.size)}</select></label>
+      ${sc.size==="Other"?field(`s${i}other`,"Describe size",sc.other,{req:true,ph:"e.g. Youth XXS"}):"<span></span>"}</div>`:""}
+  </div>`).join("")}
+  <div><button class="btn ghost small" id="addScout">+ Add another scout</button></div>
+  ${errors._msg?`<p class="errmsg">${errors._msg}</p>`:""}
+  ${nav(null,"Next: T-shirts")}`;
+}
+function stepShirts(){
+  const sizeOpts = s => `<option value="">Size…</option>`+CFG.sizes.map(z=>`<option ${s===z?"selected":""}>${esc(z)}</option>`).join("");
+  const inc = draft.scouts.map(s=>`<li>${esc(s.first||"Scout")} ${esc(s.last)}: ${esc(s.fit)} ${esc(sizeText(s))} <span class="pill yes">included</span></li>`).join("");
+  return `<div class="stack"><h2>Extra T-shirts</h2><p class="muted">Want shirts for siblings or parents? Add them here${CFG.shirt?` at ${money(CFG.shirt.amount)} each`:""}. Skip this step if you don't need any.</p></div>
+  <div class="callout"><h3>Already included</h3><ul style="margin:0;padding-left:18px">${inc}</ul></div>
+  <div class="stack">${draft.extras.map((e,i)=>`<div class="shirtrow">
+    <label class="f" for="x${i}fit">Fit<select id="x${i}fit">${CFG.fits.map(f=>`<option ${e.fit===f?"selected":""}>${esc(f)}</option>`).join("")}</select></label>
+    <label class="f" for="x${i}size">Size<select id="x${i}size" class="${errors[`x${i}size`]?"invalid":""}">${sizeOpts(e.size)}</select></label>
+    ${e.size==="Other"?field(`x${i}other`,"Describe size",e.other,{req:true}):"<span></span>"}
+    <label class="f" for="x${i}qty">Qty<input type="number" min="1" max="20" id="x${i}qty" value="${esc(e.qty)}"></label>
+    <button class="linkbtn" data-rm-extra="${i}" style="padding-bottom:10px">Remove</button></div>`).join("")}
+    <div><button class="btn ghost small" id="addExtra">+ Add a shirt</button></div></div>
+  ${errors._msg?`<p class="errmsg">${errors._msg}</p>`:""}
+  ${nav(null, draft.extras.length?"Next: talent survey":"No extras, continue")}`;
+}
+function stepTalent(){
+  const t = draft.talent;
+  return `<div class="stack"><h2>Family talent survey <span class="muted" style="font-size:1rem;font-family:var(--f-body)">optional</span></h2>
+    <p class="muted">The pack runs on parent help. Check anything you'd be open to. It doesn't commit you to anything, and it helps den leaders know who to ask.</p></div>
+  <div class="grid2">${field("toccupation","Occupation / job title",t.occupation)}${field("thobbies","Hobbies or talents",t.hobbies)}</div>
+  ${Object.entries(TALENT).map(([g,opts],gi)=>`<fieldset class="fitset"><legend>${esc(g)}</legend><div class="chips">${opts.map((o,oi)=>`<label><input type="checkbox" data-talent="${gi}" value="${esc(o)}" ${(t[g]||[]).includes(o)?"checked":""}>${esc(o)}</label>`).join("")}</div></fieldset>`).join("")}
+  <label class="f" for="tother">Anything else? (other skills, events, resources)<input type="text" id="tother" value="${esc(t.other)}"></label>
+  <div class="btnrow"><button class="btn ghost" id="back">← Back</button><span style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn ghost" id="skipTalent">Skip survey</button><button class="btn" id="next">Save and continue →</button></span></div>`;
+}
+function stepPay(){
+  const lines = computeLines(draft); const total = lines.reduce((a,l)=>a+l.amount,0);
+  const m = draft.method;
+  return `<div class="stack"><h2>Review and pay</h2><p class="muted">Pay the pack with one Zelle or one check for the total below, then enter the confirmation or check number. We use it to match your payment to our bank records.</p></div>
+  <div class="tablewrap" style="border:0"><table class="fees"><thead><tr><th>Item</th><th>For</th><th style="text-align:right">Amount</th></tr></thead><tbody>
+    ${lines.map(l=>`<tr><td>${esc(l.label)}${l.qty>1?` × ${l.qty}`:""}</td><td>${esc(l.label===CFG.shirt?.label?"Family":l.scout)}</td><td class="amt">${money(l.amount)}</td></tr>`).join("")}
+  </tbody></table></div>
+  <div class="big-total"><span><b>Total to pay ${esc(CFG.s.pack_name)}</b><br><span style="font-size:.9rem">${draft.scouts.length} scout${draft.scouts.length>1?"s":""}</span></span><strong>${money(total)}</strong></div>
+  <div class="stack" style="gap:6px"><span class="f" style="font-weight:600">How are you paying? <span class="req">*</span></span>
+    <div class="seg ${errors.method?"invalid":""}">${["Zelle","Check"].map(v=>`<label><input type="radio" name="method" value="${v}" ${m===v?"checked":""}>${v}</label>`).join("")}</div></div>
+  ${m==="Zelle"?`<div class="callout"><h3>Send ${money(total)} by Zelle</h3>
+      <div class="copyline"><span>To:</span><code id="zto">${esc(CFG.s.zelle_recipient)}</code><button class="btn ghost small" data-copy="zto">Copy</button></div>
+      <p class="muted" style="font-size:.9rem">In the Zelle memo, write your scout's name(s). After you send it, your bank shows a confirmation number. Enter it below.</p></div>
+    <div class="grid2">${field("zelleName","Name on the Zelle account",draft.zelleName,{req:true,ph:"As it appears in Zelle"})}${field("ref","Zelle confirmation number",draft.ref,{req:true,ph:"e.g. JPM99…"})}</div>`:""}
+  ${m==="Check"?`<div class="callout"><h3>Write a check for ${money(total)}</h3><p>Payable to: <b>${esc(CFG.s.check_payable_to)}</b></p>${CFG.s.check_address?`<div class="copyline" style="align-items:flex-start"><span>Mail or deliver to:</span><address id="caddr" style="font-style:normal;user-select:all;line-height:1.4">${(CFG.s.check_address).split("|").map(esc).join("<br>")}</address><button class="btn ghost small" data-copyaddr="1">Copy</button></div>`:""}<p class="muted" style="font-size:.9rem">${esc(CFG.s.check_instructions)}</p></div>
+    <div class="grid2">${field("ref","Check number",draft.ref,{req:true})}</div>`:""}
+  ${errors._msg?`<p class="errmsg">${errors._msg}</p>`:""}
+  ${nav(null,"Submit registration","submit")}`;
+}
+let lastSub=null;
+function stepDone(){
+  const s = lastSub; const anyNew = s.scouts.some(x=>x.status==="New"), anyRet = s.scouts.some(x=>x.status==="Returning");
+  return `<div class="stack"><p class="eyebrow">Registration ${esc(s.id)} received</p><h2>One last step: register with Scouting America</h2>
+    <p class="lede">You've paid the pack. Each scout also has to be registered with Scouting America, and national dues are paid there. Use the link for each scout below.</p></div>
+  <div class="natl">${s.scouts.map(x=>`<div class="row"><span><b>${esc(x.first)} ${esc(x.last)}</b> <span class="pill ${x.status==="New"?"new":"ret"}">${x.status}</span><br><span class="muted" style="font-size:.9rem">${x.status==="New"?"Fill out a new youth application and pay national dues online.":"Renew through the email from Scouting America, or sign in to my.scouting.org."}</span></span>
+    <a class="btn small" target="_blank" rel="noopener" href="${esc(x.status==="New"?CFG.s.national_new_url:CFG.s.national_returning_url)}">${x.status==="New"?"New scout application":"Renew at my.scouting.org"} ↗</a></div>`).join("")}</div>
+  <div class="callout ok"><h3>What we recorded</h3><p>${money(totalOf(s))} by ${esc(s.method)} · ${s.method==="Zelle"?"confirmation":"check"} <span class="mono">${esc(s.ref)}</span>. The treasurer will match it against the bank statement.</p></div>
+  <div class="callout gold"><h3>Don't forget the medical form</h3><p>Fill out Parts A and B for each scout and bring the paper copy to your first pack or den event.</p><p><a class="btn small" href="${esc(CFG.s.medical_form_url)}" target="_blank" rel="noopener">Download medical form (PDF)</a></p></div>
+  <p class="muted">Questions? Email <span class="mono" style="user-select:all">${esc(CFG.s.contact_email)}</span></p>
+  <div class="btnrow"><span></span><button class="btn ghost" id="again">Start a new registration (preview)</button></div>`;
+}
+
+function readStep(){
+  const v = id => (document.getElementById(id)?.value ?? "").trim();
+  if(step===1){ draft.p1={name:v("p1name"),email:v("p1email"),cell:v("p1cell")}; draft.p2={name:v("p2name"),email:v("p2email"),cell:v("p2cell")}; draft.mailing=document.getElementById("mailing").checked; }
+  if(step===2){ draft.scouts = draft.scouts.map((sc,i)=>({first:v(`s${i}first`),last:v(`s${i}last`),den:v(`s${i}den`),status:(document.querySelector(`input[name=s${i}status]:checked`)||{}).value||"",fit:v(`s${i}fit`)||sc.fit,size:v(`s${i}size`),other:v(`s${i}other`)})); }
+  if(step===3){ draft.extras = draft.extras.map((e,i)=>({fit:v(`x${i}fit`),size:v(`x${i}size`),other:v(`x${i}other`),qty:Math.max(1,parseInt(v(`x${i}qty`))||1)})); }
+  if(step===4){ const t={occupation:v("toccupation"),hobbies:v("thobbies"),other:v("tother")}; Object.keys(TALENT).forEach((g,gi)=>t[g]=[...document.querySelectorAll(`input[data-talent="${gi}"]:checked`)].map(i=>i.value)); draft.talent=t; }
+  if(step===5){ draft.method=(document.querySelector("input[name=method]:checked")||{}).value||""; draft.zelleName=v("zelleName"); draft.ref=v("ref"); }
+}
+function validate(){
+  errors={}; const need=(id,ok)=>{ if(!ok) errors[id]=1; };
+  if(step===1){ need("p1name",draft.p1.name); need("p1email",/^\S+@\S+\.\S+$/.test(draft.p1.email)); need("p1cell",draft.p1.cell.replace(/\D/g,"").length>=10);
+    if(draft.p2.email) need("p2email",/^\S+@\S+\.\S+$/.test(draft.p2.email)); }
+  if(step===2){ draft.scouts.forEach((s,i)=>{ need(`s${i}first`,s.first); need(`s${i}last`,s.last); need(`s${i}den`,s.den); need(`s${i}status`,s.status); if(CFG.shirtsIncluded){ need(`s${i}size`,s.size); if(s.size==="Other") need(`s${i}other`,s.other);} }); }
+  if(step===3){ draft.extras.forEach((e,i)=>{ need(`x${i}size`,e.size); if(e.size==="Other") need(`x${i}other`,e.other); }); }
+  if(step===5){ need("method",draft.method); if(draft.method){ need("ref",draft.ref); if(draft.method==="Zelle") need("zelleName",draft.zelleName); } }
+  if(Object.keys(errors).length) errors._msg = step===1?"Fill in the highlighted fields. Parent 1 needs a name, a valid email, and a 10-digit cell number.":step===5&&!draft.method?"Choose Zelle or Check.":"Fill in the highlighted fields to continue.";
+  return !Object.keys(errors).length;
+}
+function bindParent(){
+  const on=(id,fn)=>{ const el=document.getElementById(id); if(el) el.onclick=fn; };
+  on("back",()=>{ readStep(); errors={}; step=Math.max(0,step-1); renderParent(); scrollTo(0,0); });
+  on("next",()=>{ readStep(); if(step===4) draft.skipTalent=false; if(!validate()){ renderParent(); return;} step++; renderParent(); scrollTo(0,0); });
+  on("skipTalent",()=>{ draft.skipTalent=true; errors={}; step++; renderParent(); scrollTo(0,0); });
+  on("addScout",()=>{ readStep(); errors={}; draft.scouts.push(blankScout()); renderParent(); });
+  on("addExtra",()=>{ readStep(); errors={}; draft.extras.push({fit:"Youth",size:"",other:"",qty:1}); renderParent(); });
+  document.querySelectorAll("[data-rm-scout]").forEach(b=>b.onclick=()=>{ readStep(); errors={}; draft.scouts.splice(+b.dataset.rmScout,1); renderParent(); });
+  document.querySelectorAll("[data-rm-extra]").forEach(b=>b.onclick=()=>{ readStep(); errors={}; draft.extras.splice(+b.dataset.rmExtra,1); renderParent(); });
+  document.querySelectorAll("select[id$=size]").forEach(s=>s.onchange=()=>{ readStep(); renderParent(); document.getElementById(s.id)?.focus(); });
+  document.querySelectorAll("input[name=method]").forEach(r=>r.onchange=()=>{ readStep(); errors={}; renderParent(); });
+  document.querySelectorAll("[data-copyaddr]").forEach(b=>b.onclick=()=>copyText((CFG.s.check_address||"").split("|").join("\n")));
+  document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>copyText(document.getElementById(b.dataset.copy).textContent, document.getElementById(b.dataset.copy)));
+  on("submit",()=>{ readStep(); if(!validate()){ renderParent(); return; }
+    const n = store.submissions.length+1;
+    const sub = { id:"F-"+String(n).padStart(3,"0"), example:false, submitted:new Date().toISOString().slice(0,10), p1:draft.p1, p2:draft.p2, mailing:draft.mailing, scouts:draft.scouts, extras:draft.extras, method:draft.method, zelleName:draft.zelleName, ref:draft.ref, talent:draft.skipTalent?null:draft.talent };
+    store.submissions.push(sub); save(); lastSub=sub; step=6; renderParent(); scrollTo(0,0); toast("Registration saved to the preview"); });
+  on("again",()=>{ draft=freshDraft(); step=0; errors={}; renderParent(); scrollTo(0,0); });
+}
+
+/* ---------- committee view: derived files ---------- */
+function tables(){
+  const subs = store.submissions; const yr = CFG.s.scouting_year;
+  const roster=[], ledger=[], shirts=[], talent=[], mailing=[], trRoster=[], trCharges=[], trTx=[];
+  subs.forEach(s=>{
+    const tag = s.example?"example":"";
+    s.scouts.forEach(sc=>{
+      const d = CFG.dens.find(r=>r.den===String(sc.den))||{};
+      roster.push({family_id:s.id, scout_first:sc.first, scout_last:sc.last, den:sc.den, den_name:d.name||"", grade:d.grade||"", gender:d.gender||"", status:sc.status, parent1_name:s.p1.name, parent1_email:s.p1.email, parent1_cell:s.p1.cell, parent2_name:s.p2.name, parent2_email:s.p2.email, parent2_cell:s.p2.cell, submitted:s.submitted, _tag:tag});
+      shirts.push({family_id:s.id, for:`${sc.first} ${sc.last}`, type:"Included", fit:sc.fit, size:sizeText(sc), qty:1, _tag:tag});
+      trRoster.push({"Scout Name":`${sc.first} ${sc.last}`, "Family / Payer":s.p1.name, "Den":sc.den, "Rank / Grade":d.name?`${d.name} / ${d.grade}`:"", "Active?":"Yes", "Notes":sc.status, "BSA Member ID":"", _tag:tag});
+    });
+    s.extras.forEach(e=>shirts.push({family_id:s.id, for:`${s.p1.name} family`, type:"Extra", fit:e.fit, size:sizeText(e), qty:e.qty, _tag:tag}));
+    const lines = computeLines(s);
+    lines.forEach(l=>{
+      ledger.push({family_id:s.id, date:s.submitted, payer:s.method==="Zelle"?(s.zelleName||s.p1.name):s.p1.name, scout:l.scout, item:l.label+(l.qty>1?` x${l.qty}`:""), category:l.category, amount:l.amount, method:s.method, ref:s.ref, family_total:totalOf(s), bank_verified:"No", _tag:tag});
+      trTx.push({"Date":s.submitted, "Type":"Income", "Payer / Payee":s.method==="Zelle"?(s.zelleName||s.p1.name):s.p1.name, "Scout Name (member payment)":l.scout, "Description":`${yr} registration: ${l.label}${l.qty>1?` x${l.qty}`:""} (${s.id})`, "Category":l.category, "Payment Method":s.method, "Check # / Zelle Ref":s.ref, "Money In":l.amount, "Money Out":0, "Cleared?":"No", "Receipt / Document Link":"", "Notes":`Family total ${money(totalOf(s))}`, _tag:tag});
+    });
+    const q = s.extras.reduce((a,e)=>a+(+e.qty||0),0);
+    if(q && CFG.shirt) trCharges.push({"Active?":"Yes","Applies To":"Scout","Den":"","Scout Name":lines.find(l=>l.label===CFG.shirt.label)?.scout||"","Charge / Purpose":CFG.shirt.category,"Amount":CFG.shirt.amount*q,"Due Date":"","Notes":s.extras.map(e=>`${e.qty}x ${e.fit.toLowerCase()} ${sizeText(e)}`).join(", "), _tag:tag});
+    if(s.talent){ const row={family_id:s.id, parent:s.p1.name, email:s.p1.email, cell:s.p1.cell, occupation:s.talent.occupation||"", hobbies:s.talent.hobbies||""}; Object.keys(TALENT).forEach(g=>row[g]=(s.talent[g]||[]).join("; ")); row.other=s.talent.other||""; row._tag=tag; talent.push(row); }
+    if(s.mailing){ mailing.push({family_id:s.id, name:s.p1.name, email:s.p1.email, _tag:tag}); if(s.p2.email) mailing.push({family_id:s.id, name:s.p2.name, email:s.p2.email, _tag:tag}); }
+  });
+  CFG.perScout.concat(CFG.perFamily).forEach(c=>trCharges.unshift({"Active?":"Yes","Applies To":c.unit==="per family"?"Family":"All Pack","Den":"","Scout Name":"","Charge / Purpose":c.category,"Amount":c.amount,"Due Date":"","Notes":c.label, _tag:""}));
+  return {roster,ledger,shirts,talent,mailing,trRoster,trCharges,trTx};
+}
+const FILES = {
+  roster:{title:"Roster", file:"roster.csv", note:"One row per scout. Use it for den lists and the pack roster.", cols:["family_id","scout_first","scout_last","den","den_name","grade","gender","status","parent1_name","parent1_email","parent1_cell","parent2_name","parent2_email","parent2_cell","submitted"]},
+  ledger:{title:"Payments ledger", file:"payments_ledger.csv", note:"One row per scout per charge. Every row in a family shares the same Zelle or check number, so one bank line matches the whole family. bank_verified starts at No.", cols:["family_id","date","payer","scout","item","category","amount","method","ref","family_total","bank_verified"], money:["amount","family_total"]},
+  shirts:{title:"T-shirt order", file:"tshirt_order.csv", note:"Every shirt to order: one included shirt per scout plus paid extras.", cols:["family_id","for","type","fit","size","qty"]},
+  talent:{title:"Talent survey", file:"talent_survey.csv", note:"Families that filled out the optional survey. Semicolons separate multiple choices.", cols:["family_id","parent","email","cell","occupation","hobbies",...Object.keys(TALENT),"other"]},
+  mailing:{title:"Mailing list", file:"mailing_list.csv", note:"Emails of parents who opted in. Import this into Mailchimp.", cols:["family_id","name","email"]},
+};
+let adminTab = "roster";
+function tableHTML(rows, cols, moneyCols=[]){
+  if(!rows.length) return `<div class="callout">No rows yet. Submit a registration in the Parent form to see it here.</div>`;
+  return `<div class="tablewrap"><table class="data"><thead><tr>${cols.map(c=>`<th>${esc(c)}</th>`).join("")}<th></th></tr></thead><tbody>${rows.map(r=>`<tr>${cols.map(c=>`<td class="${moneyCols.includes(c)||typeof r[c]==="number"?"num":""}">${moneyCols.includes(c)?money(r[c]):esc(r[c])}</td>`).join("")}<td>${r._tag?'<span class="pill ex">example</span>':""}</td></tr>`).join("")}</tbody></table></div>`;
+}
+const TR = {
+  roster:["Scout Name","Family / Payer","Den","Rank / Grade","Active?","Notes","BSA Member ID"],
+  charges:["Active?","Applies To","Den","Scout Name","Charge / Purpose","Amount","Due Date","Notes"],
+  tx:["Date","Type","Payer / Payee","Scout Name (member payment)","Description","Category","Payment Method","Check # / Zelle Ref","Money In","Money Out","Cleared?","Receipt / Document Link","Notes"]
+};
+let csvCache = {};
+function renderAdmin(){
+  const T = tables(); csvCache={};
+  const counts = {roster:T.roster.length, ledger:T.ledger.length, shirts:T.shirts.reduce((a,r)=>a+ +r.qty,0), talent:T.talent.length, mailing:T.mailing.length};
+  const tabBtn = (k,label,c) => `<button role="tab" aria-selected="${adminTab===k}" data-tab="${k}">${label}${c!=null?`<span class="count">${c}</span>`:""}</button>`;
+  let body="";
+  if(FILES[adminTab]){
+    const F = FILES[adminTab]; const rows=T[adminTab]; csvCache.main = toCSV(rows,F.cols);
+    let extra="";
+    if(adminTab==="shirts"){ const tally={}; T.shirts.forEach(r=>{ const k=`${r.fit} ${r.size}`; tally[k]=(tally[k]||0)+ +r.qty; });
+      extra = `<div class="tally">${Object.entries(tally).sort().map(([k,v])=>`<div><b>${v}</b><span>${esc(k)}</span></div>`).join("")}</div>`; }
+    if(adminTab==="ledger"){ const fam={}; T.ledger.forEach(r=>fam[r.family_id]=r); const tot=Object.values(fam).reduce((a,r)=>a+r.family_total,0);
+      extra = `<div class="tally"><div><b>${Object.keys(fam).length}</b><span>families</span></div><div><b>${money(tot)}</b><span>reported paid</span></div><div><b>${T.ledger.filter(r=>r.method==="Zelle").length}</b><span>Zelle lines</span></div><div><b>${T.ledger.filter(r=>r.method==="Check").length}</b><span>check lines</span></div></div>`; }
+    body = `<div class="sechead"><div><h2>${F.title}</h2><p class="muted">${F.note} File: <span class="mono">${F.file}</span></p></div><button class="btn small" data-copycsv="main">Copy CSV</button></div>${extra}${tableHTML(rows,F.cols,F.money||[])}`;
+  } else if(adminTab==="tracker"){
+    csvCache.r = toCSV(T.trRoster,TR.roster); csvCache.c = toCSV(T.trCharges,TR.charges); csvCache.t = toCSV(T.trTx,TR.tx);
+    body = `<div class="sechead"><div><h2>Finance tracker ${esc(CFG.s.scouting_year)}</h2><p class="muted">These rows use the same columns as the tabs in your finance tracker, so they paste straight in. Payments come in as <b>Cleared? = No</b> until you check them against the bank statement.</p></div></div>
+      <div class="stack">
+        <div><div class="sechead"><h3>Pack Roster tab</h3><button class="btn small ghost" data-copycsv="r">Copy rows</button></div>${tableHTML(T.trRoster,TR.roster)}</div>
+        <div><div class="sechead"><h3>Charges tab</h3><button class="btn small ghost" data-copycsv="c">Copy rows</button></div>${tableHTML(T.trCharges,TR.charges)}</div>
+        <div><div class="sechead"><h3>Transactions tab</h3><button class="btn small ghost" data-copycsv="t">Copy rows</button></div>${tableHTML(T.trTx,TR.tx)}</div>
+      </div>`;
+  } else {
+    body = `<div class="sechead"><div><h2>Charges &amp; settings</h2><p class="muted">In the real app these are tabs in the Registration Sheet that the Cubmaster and treasurer edit each year. Change a number here and click Apply to see the parent form update. Changes stay in this browser.</p></div></div>
+      <div class="cfg">
+        <label class="f" for="cfgCharges">charges.csv <span class="muted" style="font-weight:400">· unit is "per scout", "per family", or "per shirt"; required = yes/no</span><textarea id="cfgCharges" rows="5">${esc(store.chargesCsv)}</textarea></label>
+        <label class="f" for="cfgSettings">settings.csv<textarea id="cfgSettings" rows="12">${esc(store.settingsCsv)}</textarea></label>
+        <label class="f" for="cfgDens">dens.csv<textarea id="cfgDens" rows="8">${esc(store.densCsv)}</textarea></label>
+        <div class="btnrow"><button class="btn danger small" id="resetAll">Reset preview</button><button class="btn" id="applyCfg">Apply changes</button></div>
+      </div>`;
+  }
+  document.getElementById("app").innerHTML = `<div class="filegroups">
+    <div class="fg"><p class="eyebrow">Registration Sheet · <span class="share">committee can view · Cubmaster &amp; treasurer edit</span></p><div class="tabs" role="tablist">${tabBtn("roster","Roster",counts.roster)}${tabBtn("shirts","T-shirts",counts.shirts)}${tabBtn("talent","Talent survey",counts.talent)}${tabBtn("mailing","Mailing list",counts.mailing)}${tabBtn("config","Charges & settings")}</div></div>
+    <div class="fg private"><p class="eyebrow">Finance tracker ${esc(CFG.s.scouting_year)} · <span class="share">treasurer only</span></p><div class="tabs" role="tablist">${tabBtn("ledger","Payments ledger",counts.ledger)}${tabBtn("tracker","Tracker rows")}</div></div>
+  </div><section>${body}</section>`;
+  document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{ adminTab=b.dataset.tab; renderAdmin(); });
+  document.querySelectorAll("[data-copycsv]").forEach(b=>b.onclick=()=>copyText(csvCache[b.dataset.copycsv]));
+  const ap=document.getElementById("applyCfg"); if(ap) ap.onclick=()=>{ store.chargesCsv=document.getElementById("cfgCharges").value; store.settingsCsv=document.getElementById("cfgSettings").value; store.densCsv=document.getElementById("cfgDens").value; save(); buildConfig(); toast("Charges and settings applied"); };
+  const rs=document.getElementById("resetAll"); if(rs){ let armed=false; rs.onclick=()=>{ if(!armed){ armed=true; rs.textContent="Click again to erase test data"; return; } store={chargesCsv:DEFAULT_CHARGES,settingsCsv:DEFAULT_SETTINGS,densCsv:DEFAULT_DENS,submissions:exampleSubs()}; save(); buildConfig(); renderAdmin(); toast("Preview reset"); }; }
+}
+
+/* ---------- utils ---------- */
+function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true,2200); }
+function copyText(text, selectEl){
+  const fallback=()=>{ const ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select(); let ok=false; try{ ok=document.execCommand("copy"); }catch(e){} ta.remove(); toast(ok?"Copied":"Copy blocked here. Select the text and copy it manually."); };
+  try{ navigator.clipboard.writeText(text).then(()=>toast("Copied"),fallback); }catch(e){ fallback(); }
+}
+function setMode(m){
+  document.getElementById("modeParent").setAttribute("aria-pressed", m==="parent");
+  document.getElementById("modeAdmin").setAttribute("aria-pressed", m==="admin");
+  m==="parent"?renderParent():renderAdmin(); scrollTo(0,0);
+}
+document.getElementById("modeParent").onclick=()=>setMode("parent");
+document.getElementById("modeAdmin").onclick=()=>setMode("admin");
+buildConfig();
+setMode(location.hash==="#drive"?"admin":"parent");
+</script>
+
+</body>
+</html>
