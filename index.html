@@ -91,6 +91,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .fees th{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .fees td.amt{text-align:right;white-space:nowrap;font-weight:700}
 .fees tr.grp td{background:var(--bg);font-size:.78rem;letter-spacing:.07em;text-transform:uppercase;font-weight:700;color:var(--muted);padding:7px 8px}
+.fees tr.disc td.amt{color:var(--ok)}
+.fees tr.disc .pill{vertical-align:1px}
 .fees tr.total td{border-bottom:0;font-size:1.15rem;font-weight:700}
 .fees .desc{display:block;color:var(--muted);font-size:.88rem;font-weight:400}
 .callout{border-radius:var(--r);padding:14px 16px;display:grid;gap:6px;background:var(--blue-soft)}
@@ -176,10 +178,11 @@ table.data tr:last-child td{border-bottom:0}
 
 <script>
 /* ---------- default config (what the treasurer edits) ---------- */
-const DEFAULT_CHARGES = `id,label,amount,unit,required,includes_shirts,category,paid_to,description
-pack_fee,Pack 361 Activity Fee,190,per scout,yes,1,Pack Dues,Pack 361,"Pack program costs, meeting space, badges and awards, Pinewood Derby kit, Blue & Gold Banquet, and 1 pack T-shirt"
-extra_shirt,Additional T-shirt,15,per shirt,no,0,Class B Uniform,Pack 361,Extra pack T-shirts for siblings or parents
-national_dues,Scouting America membership (approx.),175,per scout,yes,0,National Dues,Scouting America,"National and council membership fees, paid on the Scouting America website at the end of this form, not to the pack. Scouting America sets the exact amount, shown at their checkout."`;
+const DEFAULT_CHARGES = `id,label,amount,unit,required,includes_shirts,category,paid_to,valid_until,description
+pack_fee,Pack 361 Activity Fee,190,per scout,yes,1,Pack Dues,Pack 361,,"Pack program costs, meeting space, badges and awards, Pinewood Derby kit, Blue & Gold Banquet, and 1 pack T-shirt"
+early_bird,Early bird discount,-25,per scout,yes,0,Pack Dues,Pack 361,2027-09-12,Discount per scout when your payment is sent by the deadline
+extra_shirt,Additional T-shirt,15,per shirt,no,0,Class B Uniform,Pack 361,,Extra pack T-shirts for siblings or parents
+national_dues,Scouting America membership (approx.),175,per scout,yes,0,National Dues,Scouting America,,"National and council membership fees, paid on the Scouting America website at the end of this form, not to the pack. Scouting America sets the exact amount, shown at their checkout."`;
 
 const DEFAULT_SETTINGS = `key,value
 scouting_year,2027-2028
@@ -218,7 +221,7 @@ const TALENT = {
 };
 
 /* ---------- storage (preview only) ---------- */
-const LS = "pack361-reg-preview-v6";
+const LS = "pack361-reg-preview-v7";
 function load(){ try{ const s = JSON.parse(localStorage.getItem(LS)); if(s) return s; }catch(e){} return null; }
 function save(){ try{ localStorage.setItem(LS, JSON.stringify(store)); }catch(e){} }
 let store = load() || { chargesCsv:DEFAULT_CHARGES, settingsCsv:DEFAULT_SETTINGS, densCsv:DEFAULT_DENS, submissions:null };
@@ -250,14 +253,19 @@ function buildConfig(){
   const s = Object.fromEntries(parseCSV(store.settingsCsv).map(r=>[r.key,r.value]));
   const dens = parseCSV(store.densCsv);
   CFG = { charges, national, nationalPerScout: national.filter(c=>c.unit==="per scout"&&c.required).reduce((a,c)=>a+c.amount,0), s, dens,
-    perScout: charges.filter(c=>c.unit==="per scout" && c.required),
-    perFamily: charges.filter(c=>c.unit==="per family" && c.required),
+    perScoutAll: charges.filter(c=>c.unit==="per scout" && c.required),
+    perScout: charges.filter(c=>c.unit==="per scout" && c.required && isActive(c)),
+    perFamily: charges.filter(c=>c.unit==="per family" && c.required && isActive(c)),
     shirt: charges.find(c=>c.unit==="per shirt"),
     fits:(s.shirt_fits||"Youth|Adult").split("|"), sizes:(s.shirt_sizes||"S|M|L").split("|"),
-    shirtsIncluded: charges.filter(c=>c.unit==="per scout"&&c.required).reduce((a,c)=>a+c.includes_shirts,0) };
+    shirtsIncluded: charges.filter(c=>c.unit==="per scout"&&c.required&&c.amount>0).reduce((a,c)=>a+c.includes_shirts,0) };
   document.getElementById("yearline").textContent = "San Marino · Scouting year " + (s.scouting_year||"");
 }
-const money = n => "$" + (Math.round(n*100)/100).toLocaleString("en-US",{minimumFractionDigits:0,maximumFractionDigits:2});
+const money = n => (n<0?"−":"") + "$" + (Math.round(Math.abs(n)*100)/100).toLocaleString("en-US",{minimumFractionDigits:0,maximumFractionDigits:2});
+/* dates: "today" is the calendar day in Pacific time; a charge with valid_until applies through the end of that day */
+function todayPT(){ try{ return new Intl.DateTimeFormat("en-CA",{timeZone:"America/Los_Angeles",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date()); }catch(e){ return new Date().toISOString().slice(0,10); } }
+function isActive(c, asOf){ if(!c.valid_until) return true; if(!/^\d{4}-\d{2}-\d{2}$/.test(c.valid_until)) return false; return (asOf||todayPT()) <= c.valid_until; }
+function niceDate(d){ const [y,m,dd]=d.split("-").map(Number); return new Date(y,m-1,dd).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}); }
 const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const denLabel = d => { const x=CFG.dens.find(r=>r.den===String(d)); return x?`Den ${x.den} · ${x.name} (${x.grade} ${x.gender})`:(d?`Den ${d}`:""); };
 
@@ -277,7 +285,8 @@ if(!store.submissions){ store.submissions = exampleSubs(); save(); }
 /* ---------- totals ---------- */
 function computeLines(sub){
   const lines=[];
-  sub.scouts.forEach(sc=>CFG.perScout.forEach(c=>lines.push({scout:`${sc.first} ${sc.last}`.trim(), label:c.label, category:c.category, amount:c.amount, qty:1})));
+  const asOf = sub.submitted || todayPT();
+  sub.scouts.forEach(sc=>CFG.perScoutAll.filter(c=>isActive(c,asOf)).forEach(c=>lines.push({scout:`${sc.first} ${sc.last}`.trim(), label:c.label, category:c.category, amount:c.amount, qty:1, discount:c.amount<0, until:c.valid_until||""})));
   const first = sub.scouts[0]; const firstName = first?`${first.first} ${first.last}`.trim():"";
   CFG.perFamily.forEach(c=>lines.push({scout:firstName,label:c.label,category:c.category,amount:c.amount,qty:1}));
   const qty = sub.extras.reduce((a,e)=>a+(Number(e.qty)||0),0);
@@ -310,7 +319,7 @@ function nav(backLabel, nextLabel, nextId="next"){
   return `<div class="btnrow">${step>0&&step<6?`<button class="btn ghost" id="back">← ${backLabel||"Back"}</button>`:"<span></span>"}${nextLabel?`<button class="btn" id="${nextId}">${nextLabel} →</button>`:""}</div>`;
 }
 function stepWelcome(){
-  const rows = CFG.perScout.map(c=>`<tr><td>${esc(c.label)}<span class="desc">${esc(c.description)}</span></td><td>${esc(c.unit)}</td><td class="amt">${money(c.amount)}</td></tr>`).join("")
+  const rows = CFG.perScout.map(c=>`<tr class="${c.amount<0?"disc":""}"><td>${esc(c.label)}${c.valid_until?` <span class="pill new">until ${esc(niceDate(c.valid_until))}</span>`:""}<span class="desc">${esc(c.description)}${c.valid_until?`: ${esc(niceDate(c.valid_until))}.`:""}</span></td><td>${esc(c.unit)}</td><td class="amt">${money(c.amount)}</td></tr>`).join("")
     + CFG.perFamily.map(c=>`<tr><td>${esc(c.label)}<span class="desc">${esc(c.description)}</span></td><td>per family</td><td class="amt">${money(c.amount)}</td></tr>`).join("");
   const natl = CFG.national.filter(c=>c.required);
   return `
@@ -391,9 +400,10 @@ function stepPay(){
   const m = draft.method;
   return `<div class="stack"><h2>Review and pay</h2><p class="muted">Pay the pack with one Zelle or one check for the total below, then enter the confirmation or check number. We use it to match your payment to our bank records.</p></div>
   <div class="tablewrap" style="border:0"><table class="fees"><thead><tr><th>Item</th><th>For</th><th style="text-align:right">Amount</th></tr></thead><tbody>
-    ${lines.map(l=>`<tr><td>${esc(l.label)}${l.qty>1?` × ${l.qty}`:""}</td><td>${esc(l.label===CFG.shirt?.label?"Family":l.scout)}</td><td class="amt">${money(l.amount)}</td></tr>`).join("")}
+    ${lines.map(l=>`<tr class="${l.discount?"disc":""}"><td>${esc(l.label)}${l.qty>1?` × ${l.qty}`:""}</td><td>${esc(l.label===CFG.shirt?.label?"Family":l.scout)}</td><td class="amt">${money(l.amount)}</td></tr>`).join("")}
   </tbody></table></div>
   <div class="big-total"><span><b>Total to pay ${esc(CFG.s.pack_name)}</b><br><span style="font-size:.9rem">${draft.scouts.length} scout${draft.scouts.length>1?"s":""}</span></span><strong>${money(total)}</strong></div>
+  ${lines.some(l=>l.discount)?`<div class="callout gold"><h3>Early bird pricing</h3><p>This total includes the ${esc(lines.find(l=>l.discount).label.toLowerCase())}. It applies when your payment is sent by <b>${esc(niceDate(lines.find(l=>l.discount).until))}</b>. The treasurer checks payment dates against the bank records.</p></div>`:""}
   ${CFG.nationalPerScout?`<p class="muted" style="font-size:.9rem">Not included: about ${money(CFG.nationalPerScout)} per scout for Scouting America membership, paid on their website in the last step.</p>`:""}
   <div class="stack" style="gap:6px"><span class="f" style="font-weight:600">How are you paying? <span class="req">*</span></span>
     <div class="seg ${errors.method?"invalid":""}">${["Zelle","Check"].map(v=>`<label><input type="radio" name="method" value="${v}" ${m===v?"checked":""}>${v}</label>`).join("")}</div></div>
@@ -452,7 +462,7 @@ function bindParent(){
   document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>copyText(document.getElementById(b.dataset.copy).textContent, document.getElementById(b.dataset.copy)));
   on("submit",()=>{ readStep(); if(!validate()){ renderParent(); return; }
     const n = store.submissions.length+1;
-    const sub = { id:"F-"+String(n).padStart(3,"0"), example:false, submitted:new Date().toISOString().slice(0,10), p1:draft.p1, p2:draft.p2, mailing:draft.mailing, scouts:draft.scouts, extras:draft.extras, method:draft.method, zelleName:draft.zelleName, ref:draft.ref, talent:draft.skipTalent?null:draft.talent };
+    const sub = { id:"F-"+String(n).padStart(3,"0"), example:false, submitted:todayPT(), p1:draft.p1, p2:draft.p2, mailing:draft.mailing, scouts:draft.scouts, extras:draft.extras, method:draft.method, zelleName:draft.zelleName, ref:draft.ref, talent:draft.skipTalent?null:draft.talent };
     store.submissions.push(sub); save(); lastSub=sub; step=6; renderParent(); scrollTo(0,0); toast("Registration saved to the preview"); });
   on("again",()=>{ draft=freshDraft(); step=0; errors={}; renderParent(); scrollTo(0,0); });
 }
@@ -471,16 +481,18 @@ function tables(){
     });
     s.extras.forEach(e=>shirts.push({family_id:s.id, for:`${s.p1.name} family`, type:"Extra", fit:e.fit, size:sizeText(e), qty:e.qty, _tag:tag}));
     const lines = computeLines(s);
+    const agg={};
+    lines.forEach(l=>{ const k=l.scout+"|"+l.category; (agg[k]=agg[k]||{scout:l.scout,category:l.category,amount:0,labels:[]}); agg[k].amount+=l.amount; agg[k].labels.push(l.label+(l.qty>1?` x${l.qty}`:"")+(l.discount?` (${money(l.amount)})`:"")); if(l.discount) trCharges.push({"Active?":"Yes","Applies To":"Scout","Den":"","Scout Name":l.scout,"Charge / Purpose":l.label,"Amount":l.amount,"Due Date":l.until,"Notes":`Paid by ${l.until}? Treasurer to verify`, _tag:tag}); });
+    Object.values(agg).forEach(a=>trTx.push({"Date":s.submitted, "Type":"Income", "Payer / Payee":s.method==="Zelle"?(s.zelleName||s.p1.name):s.p1.name, "Scout Name (member payment)":a.scout, "Description":`${yr} registration: ${a.labels.join(" + ")} (${s.id})`, "Category":a.category, "Payment Method":s.method, "Check # / Zelle Ref":s.ref, "Money In":a.amount, "Money Out":0, "Cleared?":"No", "Receipt / Document Link":"", "Notes":`Family total ${money(totalOf(s))}`, _tag:tag}));
     lines.forEach(l=>{
       ledger.push({family_id:s.id, date:s.submitted, payer:s.method==="Zelle"?(s.zelleName||s.p1.name):s.p1.name, scout:l.scout, item:l.label+(l.qty>1?` x${l.qty}`:""), category:l.category, amount:l.amount, method:s.method, ref:s.ref, family_total:totalOf(s), bank_verified:"No", _tag:tag});
-      trTx.push({"Date":s.submitted, "Type":"Income", "Payer / Payee":s.method==="Zelle"?(s.zelleName||s.p1.name):s.p1.name, "Scout Name (member payment)":l.scout, "Description":`${yr} registration: ${l.label}${l.qty>1?` x${l.qty}`:""} (${s.id})`, "Category":l.category, "Payment Method":s.method, "Check # / Zelle Ref":s.ref, "Money In":l.amount, "Money Out":0, "Cleared?":"No", "Receipt / Document Link":"", "Notes":`Family total ${money(totalOf(s))}`, _tag:tag});
     });
     const q = s.extras.reduce((a,e)=>a+(+e.qty||0),0);
     if(q && CFG.shirt) trCharges.push({"Active?":"Yes","Applies To":"Scout","Den":"","Scout Name":lines.find(l=>l.label===CFG.shirt.label)?.scout||"","Charge / Purpose":CFG.shirt.category,"Amount":CFG.shirt.amount*q,"Due Date":"","Notes":s.extras.map(e=>`${e.qty}x ${e.fit.toLowerCase()} ${sizeText(e)}`).join(", "), _tag:tag});
     if(s.talent){ const row={family_id:s.id, parent:s.p1.name, email:s.p1.email, cell:s.p1.cell, occupation:s.talent.occupation||"", hobbies:s.talent.hobbies||""}; Object.keys(TALENT).forEach(g=>row[g]=(s.talent[g]||[]).join("; ")); row.other=s.talent.other||""; row._tag=tag; talent.push(row); }
     if(s.mailing){ mailing.push({family_id:s.id, name:s.p1.name, email:s.p1.email, _tag:tag}); if(s.p2.email) mailing.push({family_id:s.id, name:s.p2.name, email:s.p2.email, _tag:tag}); }
   });
-  CFG.perScout.concat(CFG.perFamily).forEach(c=>trCharges.unshift({"Active?":"Yes","Applies To":c.unit==="per family"?"Family":"All Pack","Den":"","Scout Name":"","Charge / Purpose":c.category,"Amount":c.amount,"Due Date":"","Notes":c.label, _tag:""}));
+  CFG.perScoutAll.concat(CFG.perFamily).filter(c=>c.amount>0&&!c.valid_until).forEach(c=>trCharges.unshift({"Active?":"Yes","Applies To":c.unit==="per family"?"Family":"All Pack","Den":"","Scout Name":"","Charge / Purpose":c.category,"Amount":c.amount,"Due Date":"","Notes":c.label, _tag:""}));
   return {roster,ledger,shirts,talent,mailing,trRoster,trCharges,trTx};
 }
 const FILES = {
@@ -525,7 +537,7 @@ function renderAdmin(){
   } else {
     body = `<div class="sechead"><div><h2>Charges &amp; settings</h2><p class="muted">In the real app these are tabs in the Registration Sheet that the Cubmaster and treasurer edit each year. Change a number here and click Apply to see the parent form update. Changes stay in this browser.</p></div></div>
       <div class="cfg">
-        <label class="f" for="cfgCharges">charges.csv <span class="muted" style="font-weight:400">· unit is "per scout", "per family", or "per shirt"; required = yes/no; paid_to "Scouting America" shows as an estimate and stays out of the pack total</span><textarea id="cfgCharges" rows="6">${esc(store.chargesCsv)}</textarea></label>
+        <label class="f" for="cfgCharges">charges.csv <span class="muted" style="font-weight:400">· unit is "per scout", "per family", or "per shirt"; required = yes/no; paid_to "Scouting America" shows as an estimate and stays out of the pack total; valid_until (YYYY-MM-DD) makes a charge or discount apply only through that date, Pacific time</span><textarea id="cfgCharges" rows="6">${esc(store.chargesCsv)}</textarea></label>
         <label class="f" for="cfgSettings">settings.csv<textarea id="cfgSettings" rows="12">${esc(store.settingsCsv)}</textarea></label>
         <label class="f" for="cfgDens">dens.csv<textarea id="cfgDens" rows="8">${esc(store.densCsv)}</textarea></label>
         <div class="btnrow"><button class="btn danger small" id="resetAll">Reset preview</button><button class="btn" id="applyCfg">Apply changes</button></div>
