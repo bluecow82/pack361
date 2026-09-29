@@ -179,7 +179,7 @@ table.data tr:last-child td{border-bottom:0}
 const DEFAULT_CHARGES = `id,label,amount,unit,required,includes_shirts,category,paid_to,description
 pack_fee,Pack 361 Activity Fee,190,per scout,yes,1,Pack Dues,Pack 361,"Pack program costs, meeting space, badges and awards, Pinewood Derby kit, Blue & Gold Banquet, and 1 pack T-shirt"
 extra_shirt,Additional T-shirt,15,per shirt,no,0,Class B Uniform,Pack 361,Extra pack T-shirts for siblings or parents
-national_dues,Scouting America membership (approx.),175,per scout,yes,0,National Dues,Scouting America,"National and council membership fees. Paid on the Scouting America website at the end of this form, not to the pack. The exact amount appears at their checkout."`;
+national_dues,Scouting America membership (approx.),175,per scout,yes,0,National Dues,Scouting America,"National and council membership fees, paid on the Scouting America website at the end of this form, not to the pack. Scouting America sets the exact amount, shown at their checkout."`;
 
 const DEFAULT_SETTINGS = `key,value
 scouting_year,2027-2028
@@ -218,7 +218,7 @@ const TALENT = {
 };
 
 /* ---------- storage (preview only) ---------- */
-const LS = "pack361-reg-preview-v5";
+const LS = "pack361-reg-preview-v6";
 function load(){ try{ const s = JSON.parse(localStorage.getItem(LS)); if(s) return s; }catch(e){} return null; }
 function save(){ try{ localStorage.setItem(LS, JSON.stringify(store)); }catch(e){} }
 let store = load() || { chargesCsv:DEFAULT_CHARGES, settingsCsv:DEFAULT_SETTINGS, densCsv:DEFAULT_DENS, submissions:null };
@@ -310,20 +310,15 @@ function nav(backLabel, nextLabel, nextId="next"){
   return `<div class="btnrow">${step>0&&step<6?`<button class="btn ghost" id="back">← ${backLabel||"Back"}</button>`:"<span></span>"}${nextLabel?`<button class="btn" id="${nextId}">${nextLabel} →</button>`:""}</div>`;
 }
 function stepWelcome(){
-  const packPerScout = CFG.perScout.reduce((a,c)=>a+c.amount,0);
-  const rows = `<tr class="grp"><td colspan="3">Paid to ${esc(CFG.s.pack_name||"Pack 361")} (by Zelle or check)</td></tr>`
-    + CFG.perScout.map(c=>`<tr><td>${esc(c.label)}<span class="desc">${esc(c.description)}</span></td><td>${esc(c.unit)}</td><td class="amt">${money(c.amount)}</td></tr>`).join("")
-    + CFG.perFamily.map(c=>`<tr><td>${esc(c.label)}<span class="desc">${esc(c.description)}</span></td><td>per family</td><td class="amt">${money(c.amount)}</td></tr>`).join("")
-    + CFG.charges.filter(c=>!c.required).map(c=>`<tr><td>${esc(c.label)} <span class="muted">(optional)</span><span class="desc">${esc(c.description)}</span></td><td>${esc(c.unit)}</td><td class="amt">${money(c.amount)}</td></tr>`).join("")
-    + (CFG.national.length ? `<tr class="grp"><td colspan="3">Paid to Scouting America (on their website)</td></tr>`
-      + CFG.national.map(c=>`<tr><td>${esc(c.label)}<span class="desc">${esc(c.description)}</span></td><td>${esc(c.unit)}</td><td class="amt">≈ ${money(c.amount)}</td></tr>`).join("") : "")
-    + (CFG.nationalPerScout ? `<tr class="total"><td>Estimated total per scout</td><td></td><td class="amt">≈ ${money(packPerScout+CFG.nationalPerScout)}</td></tr>` : "");
+  const rows = CFG.perScout.map(c=>`<tr><td>${esc(c.label)}<span class="desc">${esc(c.description)}</span></td><td>${esc(c.unit)}</td><td class="amt">${money(c.amount)}</td></tr>`).join("")
+    + CFG.perFamily.map(c=>`<tr><td>${esc(c.label)}<span class="desc">${esc(c.description)}</span></td><td>per family</td><td class="amt">${money(c.amount)}</td></tr>`).join("");
+  const natl = CFG.national.filter(c=>c.required);
   return `
   <div class="stack"><p class="eyebrow">Scouting year ${esc(CFG.s.scouting_year)}</p><h1>Welcome to ${esc(CFG.s.pack_name||"Pack 361")}!</h1>
   <p class="lede">We're glad you're joining us, whether this is your first year or you're coming back. This form takes about 5 minutes. You can register all of your scouts at once and pay with one Zelle or one check.</p></div>
   <div class="stack"><h2>What it costs</h2>
     <div class="tablewrap" style="border:0"><table class="fees"><thead><tr><th>Charge</th><th>Unit</th><th style="text-align:right">Amount</th></tr></thead><tbody>${rows}</tbody></table></div>
-    <p class="muted" style="font-size:.9rem">Scouting America sets its own fees and can change them. The amount above is an estimate; you'll pay the exact amount on their website at the end of this form.</p>
+    <div class="callout"><h3>Scouting America membership is separate</h3>${natl.length?`<p><b>About ${money(CFG.nationalPerScout)} per scout.</b> ${natl.map(c=>esc(c.description)).join(" ")}</p>`:`<p>National dues are set by Scouting America and paid on their website, not to the pack. We'll send you there at the end of this form.</p>`}</div>
   </div>
   <div class="stack"><h2>What you'll do</h2>
     <div class="grid3">
