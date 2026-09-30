@@ -147,6 +147,11 @@ table.data tr:last-child td{border-bottom:0}
 .tally b{display:block;font-size:1.3rem;font-family:var(--f-display);font-variant-numeric:tabular-nums}
 .tally span{font-size:.8rem;color:var(--muted)}
 .cfg{display:grid;gap:18px}
+.email{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
+.email header{padding:12px 16px;border-bottom:1px solid var(--line);background:var(--bg);display:grid;gap:3px}
+.email .ebody{padding:16px;display:grid;gap:10px;max-width:640px;font-size:.95rem}
+.email .ebody ul{margin:0;padding-left:20px}
+.email .fees td{padding:6px 8px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:8px;font-weight:600;font-size:.9rem;z-index:10}
 
 @media (max-width:760px){
@@ -165,7 +170,7 @@ table.data tr:last-child td{border-bottom:0}
 <body>
 <div class="wrap">
   <div class="topbar">
-    <div class="brand"><img class="logo" src="logo.png" alt="Pack 361 Cub Scouts logo" width="116" height="80"><div><strong>Family Registration</strong><small id="yearline">San Marino · Scouting year</small></div></div>
+    <div class="brand"><img class="logo" src="logo.png" alt="Pack 361 Cub Scouts logo" width="116" height="80"><div><strong>Family Registration</strong><small id="yearline">K.L. Carver Elementary School • San Marino</small></div></div>
     <div class="mode" role="group" aria-label="View">
       <button id="modeParent" aria-pressed="true">Parent form</button>
       <button id="modeAdmin" aria-pressed="false">Drive files</button>
@@ -180,13 +185,15 @@ table.data tr:last-child td{border-bottom:0}
 /* ---------- default config (what the treasurer edits) ---------- */
 const DEFAULT_CHARGES = `id,label,amount,unit,required,includes_shirts,category,paid_to,valid_until,description
 pack_fee,Pack 361 Activity Fee,190,per scout,yes,1,Pack Dues,Pack 361,,"Pack program costs, meeting space, badges and awards, Pinewood Derby kit, Blue & Gold Banquet, and 1 pack T-shirt"
-early_bird,Early bird discount,-25,per scout,yes,0,Pack Dues,Pack 361,2027-09-12,Discount per scout when your payment is sent by the deadline
+responsible_parent,Responsible parent discount,-25,per scout,yes,0,Pack Dues,Pack 361,2027-09-12,Discount per scout when your payment is sent by the deadline
 extra_shirt,Additional T-shirt,15,per shirt,no,0,Class B Uniform,Pack 361,,Extra pack T-shirts for siblings or parents
-national_dues,Scouting America membership (approx.),175,per scout,yes,0,National Dues,Scouting America,,"National and council membership fees, paid on the Scouting America website at the end of this form, not to the pack. Scouting America sets the exact amount, shown at their checkout."`;
+national_dues,Scouting America membership (approx.),175,per scout,yes,0,National Dues,Scouting America,,"National and council membership fees, paid on the Scouting America website at the end of this form, not to the local Carver pack. Scouting America sets the exact amount, shown at their checkout."`;
 
 const DEFAULT_SETTINGS = `key,value
 scouting_year,2027-2028
 pack_name,Pack 361
+school_name,K.L. Carver Elementary School
+city,San Marino
 zelle_recipient,treasurer@sanmarinopack361.org
 check_payable_to,Cub Scout Pack 361
 check_address,"Attn: Pack 361 Treasurer|K.L. Carver Elementary School|3100 Huntington Dr, San Marino, CA 91108"
@@ -221,7 +228,7 @@ const TALENT = {
 };
 
 /* ---------- storage (preview only) ---------- */
-const LS = "pack361-reg-preview-v7";
+const LS = "pack361-reg-preview-v9";
 function load(){ try{ const s = JSON.parse(localStorage.getItem(LS)); if(s) return s; }catch(e){} return null; }
 function save(){ try{ localStorage.setItem(LS, JSON.stringify(store)); }catch(e){} }
 let store = load() || { chargesCsv:DEFAULT_CHARGES, settingsCsv:DEFAULT_SETTINGS, densCsv:DEFAULT_DENS, submissions:null };
@@ -259,7 +266,7 @@ function buildConfig(){
     shirt: charges.find(c=>c.unit==="per shirt"),
     fits:(s.shirt_fits||"Youth|Adult").split("|"), sizes:(s.shirt_sizes||"S|M|L").split("|"),
     shirtsIncluded: charges.filter(c=>c.unit==="per scout"&&c.required&&c.amount>0).reduce((a,c)=>a+c.includes_shirts,0) };
-  document.getElementById("yearline").textContent = "San Marino · Scouting year " + (s.scouting_year||"");
+  document.getElementById("yearline").textContent = [s.school_name, s.city, s.scouting_year].filter(Boolean).join(" • ");
 }
 const money = n => (n<0?"−":"") + "$" + (Math.round(Math.abs(n)*100)/100).toLocaleString("en-US",{minimumFractionDigits:0,maximumFractionDigits:2});
 /* dates: "today" is the calendar day in Pacific time; a charge with valid_until applies through the end of that day */
@@ -327,7 +334,7 @@ function stepWelcome(){
   <p class="lede">We're glad you're joining us, whether this is your first year or you're coming back. This form takes about 5 minutes. You can register all of your scouts at once and pay with one Zelle or one check.</p></div>
   <div class="stack"><h2>What it costs</h2>
     <div class="tablewrap" style="border:0"><table class="fees"><thead><tr><th>Charge</th><th>Unit</th><th style="text-align:right">Amount</th></tr></thead><tbody>${rows}</tbody></table></div>
-    <div class="callout"><h3>Scouting America membership is separate</h3>${natl.length?`<p><b>About ${money(CFG.nationalPerScout)} per scout.</b> ${natl.map(c=>esc(c.description)).join(" ")}</p>`:`<p>National dues are set by Scouting America and paid on their website, not to the pack. We'll send you there at the end of this form.</p>`}</div>
+    <div class="callout"><h3>Scouting America membership is separate</h3>${natl.length?`<p><b>About ${money(CFG.nationalPerScout)} per scout.</b> ${natl.map(c=>esc(c.description)).join(" ")}</p>`:`<p>National dues are set by Scouting America and paid on their website, not to the local Carver pack. We'll send you there at the end of this form.</p>`}</div>
   </div>
   <div class="stack"><h2>What you'll do</h2>
     <div class="grid3">
@@ -403,7 +410,7 @@ function stepPay(){
     ${lines.map(l=>`<tr class="${l.discount?"disc":""}"><td>${esc(l.label)}${l.qty>1?` × ${l.qty}`:""}</td><td>${esc(l.label===CFG.shirt?.label?"Family":l.scout)}</td><td class="amt">${money(l.amount)}</td></tr>`).join("")}
   </tbody></table></div>
   <div class="big-total"><span><b>Total to pay ${esc(CFG.s.pack_name)}</b><br><span style="font-size:.9rem">${draft.scouts.length} scout${draft.scouts.length>1?"s":""}</span></span><strong>${money(total)}</strong></div>
-  ${lines.some(l=>l.discount)?`<div class="callout gold"><h3>Early bird pricing</h3><p>This total includes the ${esc(lines.find(l=>l.discount).label.toLowerCase())}. It applies when your payment is sent by <b>${esc(niceDate(lines.find(l=>l.discount).until))}</b>. The treasurer checks payment dates against the bank records.</p></div>`:""}
+  ${lines.some(l=>l.discount)?`<div class="callout gold"><h3>${esc(lines.find(l=>l.discount).label)}</h3><p>This total includes the ${esc(lines.find(l=>l.discount).label.toLowerCase())}. It applies when your payment is sent by <b>${esc(niceDate(lines.find(l=>l.discount).until))}</b>. The treasurer checks payment dates against the bank records.</p></div>`:""}
   ${CFG.nationalPerScout?`<p class="muted" style="font-size:.9rem">Not included: about ${money(CFG.nationalPerScout)} per scout for Scouting America membership, paid on their website in the last step.</p>`:""}
   <div class="stack" style="gap:6px"><span class="f" style="font-weight:600">How are you paying? <span class="req">*</span></span>
     <div class="seg ${errors.method?"invalid":""}">${["Zelle","Check"].map(v=>`<label><input type="radio" name="method" value="${v}" ${m===v?"checked":""}>${v}</label>`).join("")}</div></div>
@@ -417,6 +424,25 @@ function stepPay(){
   ${nav(null,"Submit registration","submit")}`;
 }
 let lastSub=null;
+/* confirmation email sent on submit (real app: Apps Script MailApp; preview: shown under Drive files) */
+function emailFor(sub){
+  const lines = computeLines(sub), total = lines.reduce((a,l)=>a+l.amount,0), disc = lines.find(l=>l.discount);
+  const to = [sub.p1.email, sub.p2.email].filter(Boolean);
+  const subject = `${CFG.s.pack_name||"Pack 361"} registration received (${sub.id})`;
+  const addr = (CFG.s.check_address||"").split("|").map(esc).join("<br>");
+  const html = `<p>Hi ${esc((sub.p1.name||"").split(" ")[0]||"there")},</p>
+  <p>Thanks for registering with ${esc(CFG.s.pack_name||"Pack 361")} for the ${esc(CFG.s.scouting_year)} scouting year. Here's a copy for your records.</p>
+  <p><b>Scouts registered</b></p><ul>${sub.scouts.map(x=>`<li>${esc(x.first)} ${esc(x.last)}, ${esc(denLabel(x.den))} (${esc(x.status)})</li>`).join("")}</ul>
+  <p><b>Pack payment</b></p><table class="fees"><tbody>${lines.map(l=>`<tr><td>${esc(l.label)}${l.qty>1?` × ${l.qty}`:""}</td><td>${esc(l.label===CFG.shirt?.label?"Family":l.scout)}</td><td class="amt">${money(l.amount)}</td></tr>`).join("")}<tr class="total"><td>Total</td><td></td><td class="amt">${money(total)}</td></tr></tbody></table>
+  <p>You told us you paid by <b>${esc(sub.method)}</b> (${sub.method==="Zelle"?"confirmation":"check"} #<span class="mono">${esc(sub.ref)}</span>). ${sub.method==="Zelle"?`If you haven't sent it yet, send ${money(total)} by Zelle to <b>${esc(CFG.s.zelle_recipient)}</b>.`:`If you haven't sent it yet, make the check for ${money(total)} payable to <b>${esc(CFG.s.check_payable_to)}</b> and send it to:<br>${addr}`}</p>
+  ${disc?`<p>Your total includes the ${esc(disc.label.toLowerCase())}, which applies when payment is sent by ${esc(niceDate(disc.until))}.</p>`:""}
+  <p><b>Next: register with Scouting America</b><br>Each scout also needs to be registered with Scouting America${CFG.nationalPerScout?` (about ${money(CFG.nationalPerScout)} per scout, paid on their website)`:""}.<br>
+  ${sub.scouts.some(x=>x.status==="New")?`New scouts: <a href="${esc(CFG.s.national_new_url)}" target="_blank" rel="noopener">new youth application</a><br>`:""}${sub.scouts.some(x=>x.status==="Returning")?`Returning scouts: <a href="${esc(CFG.s.national_returning_url)}" target="_blank" rel="noopener">renew at my.scouting.org</a>`:""}</p>
+  <p><b>BAND</b><br>You'll be added to BAND, our preferred method of communicating with scouts.</p>
+  <p><b>Medical form</b><br>Fill out Parts A and B of the medical form for each scout and bring the paper copy to your first pack or den event. <a href="${esc(CFG.s.medical_form_url)}" target="_blank" rel="noopener">Download the medical form (PDF)</a></p>
+  <p>Questions? Reply to this email or write to ${esc(CFG.s.contact_email)}.</p><p>Welcome to the pack!<br>${esc(CFG.s.pack_name||"Pack 361")}</p>`;
+  return {to, subject, html, sent:sub.submitted};
+}
 function stepDone(){
   const s = lastSub; const anyNew = s.scouts.some(x=>x.status==="New"), anyRet = s.scouts.some(x=>x.status==="Returning");
   return `<div class="stack"><p class="eyebrow">Registration ${esc(s.id)} received</p><h2>One last step: register with Scouting America</h2>
@@ -425,6 +451,7 @@ function stepDone(){
     <a class="btn small" target="_blank" rel="noopener" href="${esc(x.status==="New"?CFG.s.national_new_url:CFG.s.national_returning_url)}">${x.status==="New"?"New scout application":"Renew at my.scouting.org"} ↗</a></div>`).join("")}</div>
   <div class="callout ok"><h3>What we recorded</h3><p>${money(totalOf(s))} by ${esc(s.method)} · ${s.method==="Zelle"?"confirmation":"check"} <span class="mono">${esc(s.ref)}</span>. The treasurer will match it against the bank statement.</p></div>
   <div class="callout gold"><h3>Don't forget the medical form</h3><p>Fill out Parts A and B for each scout and bring the paper copy to your first pack or den event.</p><p><a class="btn small" href="${esc(CFG.s.medical_form_url)}" target="_blank" rel="noopener">Download medical form (PDF)</a></p></div>
+  <div class="callout"><h3>Confirmation email</h3><p>A copy of this registration, with the amount, payment details, Scouting America links and the medical form, goes to <b>${esc([s.p1.email,s.p2.email].filter(Boolean).join(" and "))}</b>. <span class="muted">(Preview: nothing is sent. See it under Drive files → Emails sent.)</span></p></div>
   <p class="muted">Questions? Email <span class="mono" style="user-select:all">${esc(CFG.s.contact_email)}</span></p>
   <div class="btnrow"><span></span><button class="btn ghost" id="again">Start a new registration (preview)</button></div>`;
 }
@@ -526,6 +553,10 @@ function renderAdmin(){
     if(adminTab==="ledger"){ const fam={}; T.ledger.forEach(r=>fam[r.family_id]=r); const tot=Object.values(fam).reduce((a,r)=>a+r.family_total,0);
       extra = `<div class="tally"><div><b>${Object.keys(fam).length}</b><span>families</span></div><div><b>${money(tot)}</b><span>reported paid</span></div><div><b>${T.ledger.filter(r=>r.method==="Zelle").length}</b><span>Zelle lines</span></div><div><b>${T.ledger.filter(r=>r.method==="Check").length}</b><span>check lines</span></div></div>`; }
     body = `<div class="sechead"><div><h2>${F.title}</h2><p class="muted">${F.note} File: <span class="mono">${F.file}</span></p></div><button class="btn small" data-copycsv="main">Copy CSV</button></div>${extra}${tableHTML(rows,F.cols,F.money||[])}`;
+  } else if(adminTab==="emails"){
+    const subs=[...store.submissions].reverse();
+    body = `<div class="sechead"><div><h2>Emails sent</h2><p class="muted">Every family gets this confirmation right after they submit. In the real app it's sent from the pack's Google account with replies going to the treasurer, and each send is logged on this tab.</p></div></div>
+      <div class="stack">${subs.map(sub=>{ const e=emailFor(sub); return `<article class="email"><header><div><b>${esc(e.subject)}</b>${sub.example?' <span class="pill ex">example</span>':""}</div><div class="muted" style="font-size:.85rem">To: ${esc(e.to.join(", "))} · Reply-to: ${esc(CFG.s.zelle_recipient)} · ${esc(e.sent)}</div></header><div class="ebody">${e.html}</div></article>`; }).join("")}</div>`;
   } else if(adminTab==="tracker"){
     csvCache.r = toCSV(T.trRoster,TR.roster); csvCache.c = toCSV(T.trCharges,TR.charges); csvCache.t = toCSV(T.trTx,TR.tx);
     body = `<div class="sechead"><div><h2>Finance tracker ${esc(CFG.s.scouting_year)}</h2><p class="muted">These rows use the same columns as the tabs in your finance tracker, so they paste straight in. Payments come in as <b>Cleared? = No</b> until you check them against the bank statement.</p></div></div>
@@ -538,13 +569,13 @@ function renderAdmin(){
     body = `<div class="sechead"><div><h2>Charges &amp; settings</h2><p class="muted">In the real app these are tabs in the Registration Sheet that the Cubmaster and treasurer edit each year. Change a number here and click Apply to see the parent form update. Changes stay in this browser.</p></div></div>
       <div class="cfg">
         <label class="f" for="cfgCharges">charges.csv <span class="muted" style="font-weight:400">· unit is "per scout", "per family", or "per shirt"; required = yes/no; paid_to "Scouting America" shows as an estimate and stays out of the pack total; valid_until (YYYY-MM-DD) makes a charge or discount apply only through that date, Pacific time</span><textarea id="cfgCharges" rows="6">${esc(store.chargesCsv)}</textarea></label>
-        <label class="f" for="cfgSettings">settings.csv<textarea id="cfgSettings" rows="12">${esc(store.settingsCsv)}</textarea></label>
+        <label class="f" for="cfgSettings">settings.csv<textarea id="cfgSettings" rows="16">${esc(store.settingsCsv)}</textarea></label>
         <label class="f" for="cfgDens">dens.csv<textarea id="cfgDens" rows="8">${esc(store.densCsv)}</textarea></label>
         <div class="btnrow"><button class="btn danger small" id="resetAll">Reset preview</button><button class="btn" id="applyCfg">Apply changes</button></div>
       </div>`;
   }
   document.getElementById("app").innerHTML = `<div class="filegroups">
-    <div class="fg"><p class="eyebrow">Registration Sheet · <span class="share">committee can view · Cubmaster &amp; treasurer edit</span></p><div class="tabs" role="tablist">${tabBtn("roster","Roster",counts.roster)}${tabBtn("shirts","T-shirts",counts.shirts)}${tabBtn("talent","Talent survey",counts.talent)}${tabBtn("mailing","Mailing list",counts.mailing)}${tabBtn("config","Charges & settings")}</div></div>
+    <div class="fg"><p class="eyebrow">Registration Sheet · <span class="share">committee can view · Cubmaster &amp; treasurer edit</span></p><div class="tabs" role="tablist">${tabBtn("roster","Roster",counts.roster)}${tabBtn("shirts","T-shirts",counts.shirts)}${tabBtn("talent","Talent survey",counts.talent)}${tabBtn("mailing","Mailing list",counts.mailing)}${tabBtn("emails","Emails sent",store.submissions.length)}${tabBtn("config","Charges & settings")}</div></div>
     <div class="fg private"><p class="eyebrow">Finance tracker ${esc(CFG.s.scouting_year)} · <span class="share">treasurer only</span></p><div class="tabs" role="tablist">${tabBtn("ledger","Payments ledger",counts.ledger)}${tabBtn("tracker","Tracker rows")}</div></div>
   </div><section>${body}</section>`;
   document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{ adminTab=b.dataset.tab; renderAdmin(); });
